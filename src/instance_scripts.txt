@@ -1,0 +1,162 @@
+# BankAccount 1
+class AccountBase:
+    def __init__(self, owner, balance: float = 0):
+        self.owner = owner
+        self.balance = float(balance)
+    
+    def deposit(self, amount: float):
+        if amount > 0:
+            self.balance += amount
+            print(f"Deposited ${amount:.2f}. New balance: ${self.balance:.2f}.")
+        else:
+            print("Deposit must be positive!")
+    
+    def get_balance(self):
+        return self.balance
+    
+    def __str__(self):
+        return f"AccountBase(owner={self.owner}, balance=${self.balance:.2f})"
+
+
+class SavingsAccount(AccountBase):
+    def __init__(self, owner, balance: float = 0, interest_rate: float = 0.02):
+        super().__init__(owner, balance)
+        self.interest_rate = interest_rate
+    
+    def apply_interest(self):
+        interest = self.balance * self.interest_rate
+        self.balance += interest
+        print(f"Interest ${interest:.2f} applied. New balance: ${self.balance:.2f}.")
+    
+    def __str__(self):
+        return f"SavingsAccount(owner={self.owner}, balance=${self.balance:.2f}, rate={self.interest_rate * 100:.1f}%)"
+
+
+class CheckingAccount(AccountBase):
+    def __init__(self, owner, balance: float = 0, overdraft_limit: float = 100):
+        super().__init__(owner, balance)
+        self.overdraft_limit = overdraft_limit
+    
+    def withdraw(self, amount: float):
+        if amount > 0 and amount <= self.balance + self.overdraft_limit:
+            self.balance -= amount
+            print(f"Withdrew ${amount:.2f}. New balance: ${self.balance:.2f}.")
+        elif amount <= 0:
+            print("Withdrawal must be positive!")
+        else:
+            print("Exceeded overdraft limit!")
+    
+    def __str__(self):
+        return f"CheckingAccount(owner={self.owner}, balance=${self.balance:.2f}, overdraft=${self.overdraft_limit:.2f})"
+
+class BankAccount(SavingsAccount, CheckingAccount):
+    def __init__(self, owner):
+        balance = 0 
+        interest_rate = 0.02 
+        overdraft_limit = 100
+
+        SavingsAccount.__init__(self, owner, balance, interest_rate)
+        CheckingAccount.__init__(self, owner, balance, overdraft_limit)
+    
+    def __str__(self):
+        return (f"BankAccount(owner={self.owner}, balance=${self.balance:.2f}, "
+                f"rate={self.interest_rate * 100:.1f}%, overdraft=${self.overdraft_limit:.2f})")
+
+
+# BankAccount 2
+class BankAccount:
+    def __init__(self, name: str) -> None:
+        self.name: str = name
+        self.balance: float = 0
+
+    def deposit(self, amount: float) -> None:
+        if amount <= 0:
+            raise ValueError("Deposit amount must be positive.")
+        self.balance += amount
+        return SIEvent({"Operation":"deposit","name":self.name,"balance":self.balance, "action":{"amount":amount}})
+
+    def withdraw(self, amount: float) -> bool:
+        if amount <= 0:
+            raise ValueError("Withdrawal amount must be positive.")
+        if self.balance >= amount:
+            self.balance -= amount
+            return SIEvent({"Operation":"withdraw","name":self.name,"balance":self.balance, "action":{"amount":amount}})
+
+        else:
+            print("Insufficient funds for withdrawal.")
+            return False
+
+    def transfer(self, recipient: str, amount: float) -> bool:
+        if amount <= 0:
+            raise ValueError("Transfer amount must be positive.")
+        if self.balance >= amount:
+            self.balance -= amount
+            print(f"Transferred {amount:.2f} to {recipient}")
+            return SIEvent({"Operation":"transfer","name":self.name,"balance":self.balance, "action":{"amount":amount,"recipient":recipient,}})
+        return False
+
+    def get_balance(self) -> float:
+        print("Available balance is", self.balance)
+
+
+///////////////////////////////////////////////////// Instance Ladder ///////////////////////////////////////////////////////////
+
+class SavingsAccount:
+    def __init__(self, owner:str):
+        self.owner = owner
+        self.savings_balance = 0
+        self.interest_rate = 0.02
+
+    def deposit_savings(self, amount:float):
+        if amount > 0:
+            self.savings_balance += amount
+            print(f"Deposited ${amount:.2f} to Savings. New Savings Balance: ${self.savings_balance:.2f}")
+        else:
+            print("Deposit must be positive!")
+
+    def withdraw_savings(self, amount:float):
+        if amount > 0 and amount <= self.savings_balance:
+            self.savings_balance -= amount
+            print(f"Withdrew ${amount:.2f} from Savings. New Savings Balance: ${self.savings_balance:.2f}")
+        else:
+            print("Insufficient funds in Savings or invalid amount!")
+
+    def apply_interest(self):
+        interest = self.savings_balance * self.interest_rate
+        self.savings_balance += interest
+        print(f"Applied interest of ${interest:.2f}. New Savings Balance: ${self.savings_balance:.2f}")
+
+
+
+class CurrentAccount:
+    def __init__(self, owner:str):
+        self.owner = owner
+        self.current_balance = 0
+        self.overdraft_limit = 500
+
+    def deposit_current(self, amount:float):
+        if amount > 0:
+            self.current_balance += amount
+            print(f"Deposited ${amount:.2f} to Current. New Current Balance: ${self.current_balance:.2f}")
+        else:
+            print("Deposit must be positive!")
+
+    def withdraw_current(self, amount:float):
+        if amount > 0 and amount <= self.current_balance + self.overdraft_limit:
+            self.current_balance -= amount
+            print(f"Withdrew ${amount:.2f} from Current. New Current Balance: ${self.current_balance:.2f}")
+        else:
+            print("Insufficient funds in Current (considering overdraft) or invalid amount!")
+
+
+
+class CombinedAccount(SavingsAccount, CurrentAccount):
+    def __init__(self, owner:str):
+        # Initialize each parent class separately with distinct attributes.
+        SavingsAccount.__init__(self, owner)
+        CurrentAccount.__init__(self, owner)
+
+    def get_total_balance(self):
+        total = self.savings_balance + self.current_balance
+        print(f"Total balance for {self.owner} is ${total:.2f}")
+        return total

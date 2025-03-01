@@ -1,0 +1,25 @@
+class SavingsAccount:
+    def __init__(self, owner:str):
+        self.owner = owner
+        self.savings_balance = 0
+        self.interest_rate = 0.02
+
+    def deposit_savings(self, amount:float):
+        if amount > 0:
+            self.savings_balance += amount
+            print(f"Deposited ${amount:.2f} to Savings. New Savings Balance: ${self.savings_balance:.2f}")
+        else:
+            print("Deposit must be positive!")
+
+    def withdraw_savings(self, amount:float):
+        if amount > 0 and amount <= self.savings_balance:
+            self.savings_balance -= amount
+            print(f"Withdrew ${amount:.2f} from Savings. New Savings Balance: ${self.savings_balance:.2f}")
+        else:
+            print("Insufficient funds in Savings or invalid amount!")
+
+    def apply_interest(self):
+        interest = self.savings_balance * self.interest_rate
+        self.savings_balance += interest
+        print(f"Applied interest of ${interest:.2f}. New Savings Balance: ${self.savings_balance:.2f}")
+
