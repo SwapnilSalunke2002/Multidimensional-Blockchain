@@ -1,25 +1,34 @@
-class SavingsAccount:
-    def __init__(self, owner:str):
-        self.owner = owner
-        self.savings_balance = 0
-        self.interest_rate = 0.02
+class BankAccount:
+    def __init__(self, name: str) -> None:
+        self.name: str = name
+        self.balance: float = 0
 
-    def deposit_savings(self, amount:float):
-        if amount > 0:
-            self.savings_balance += amount
-            print(f"Deposited ${amount:.2f} to Savings. New Savings Balance: ${self.savings_balance:.2f}")
+    def deposit(self, amount: float) -> None:
+        if amount <= 0:
+            raise ValueError("Deposit amount must be positive.")
+        self.balance += amount
+        return SIEvent({"Operation":"deposit","name":self.name,"balance":self.balance, "action":{"amount":amount}})
+
+    def withdraw(self, amount: float) -> bool:
+        if amount <= 0:
+            raise ValueError("Withdrawal amount must be positive.")
+        if self.balance >= amount:
+            self.balance -= amount
+            return SIEvent({"Operation":"withdraw","name":self.name,"balance":self.balance, "action":{"amount":amount}})
+
         else:
-            print("Deposit must be positive!")
+            print("Insufficient funds for withdrawal.")
+            return False
 
-    def withdraw_savings(self, amount:float):
-        if amount > 0 and amount <= self.savings_balance:
-            self.savings_balance -= amount
-            print(f"Withdrew ${amount:.2f} from Savings. New Savings Balance: ${self.savings_balance:.2f}")
-        else:
-            print("Insufficient funds in Savings or invalid amount!")
+    def transfer(self, recipient: str, amount: float) -> bool:
+        if amount <= 0:
+            raise ValueError("Transfer amount must be positive.")
+        if self.balance >= amount:
+            self.balance -= amount
+            print(f"Transferred {amount:.2f} to {recipient}")
+            return SIEvent({"Operation":"transfer","name":self.name,"balance":self.balance, "action":{"amount":amount,"recipient":recipient,}})
+        return False
 
-    def apply_interest(self):
-        interest = self.savings_balance * self.interest_rate
-        self.savings_balance += interest
-        print(f"Applied interest of ${interest:.2f}. New Savings Balance: ${self.savings_balance:.2f}")
+    def get_balance(self) -> float:
+        print("Available balance is", self.balance)
 
